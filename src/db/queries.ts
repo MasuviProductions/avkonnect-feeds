@@ -1,7 +1,7 @@
 import Feeds, { IFeed } from './models/feeds';
 
 const getUserFeeds = async (userId: string): Promise<Array<IFeed> | undefined> => {
-    const userFeeds = await Feeds.query('id').eq(userId).exec();
+    const userFeeds = await Feeds.query('userId').eq(userId).exec();
     return userFeeds || [];
 };
 
