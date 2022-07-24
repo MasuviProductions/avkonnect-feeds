@@ -41,7 +41,7 @@ functions:
                   request:
                       contentHandling: CONVERT_TO_TEXT
             - http: 'ANY {proxy+}'
-    notifications-generator:
+    feed-events:
         handler: ./build/events/index.handler
         events:
             - sqs:
