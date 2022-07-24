@@ -1,22 +1,63 @@
-export interface AppResponseError {
+import { Document } from 'dynamoose/dist/Document';
+import { ObjectType } from 'dynamoose/dist/General';
+import {
+    ContextConfigDefault,
+    preHandlerAsyncHookHandler,
+    RawReplyDefaultExpression,
+    RawRequestDefaultExpression,
+    RawServerDefault,
+    RequestGenericInterface,
+    RouteHandlerMethod,
+} from 'fastify';
+import { ReplyGenericInterface } from 'fastify/types/reply';
+
+export interface HttpResponseError {
     code: string;
     message: string;
 }
 
-export interface AppResponse<T = unknown> {
-    statusCode: number;
+export interface HttpDynamoDBResponsePagination {
+    nextSearchStartFromKey?: ObjectType;
+    count: number;
+}
+
+export interface HttpResponsePagination {
+    totalCount: number;
+    totalPages: number;
+    page: number;
+    count: number;
+}
+
+export interface HttpResponse<T = unknown> {
+    success: boolean;
     data?: T;
-    error?: AppResponseError;
+    error?: HttpResponseError;
+    pagination?: HttpResponsePagination;
+    dDBPagination?: HttpDynamoDBResponsePagination;
 }
 
-export interface IBook {
-    id: string;
-    title: string;
-    author: string;
-}
+export type IDynamooseDocument<T> = T & Document;
 
-export interface IMovie {
-    id: string;
-    title: string;
-    director: string;
+interface FastifyRouteGenericInterface extends RequestGenericInterface, ReplyGenericInterface {}
+
+export type RequestHandler<Request = unknown> = RouteHandlerMethod<
+    RawServerDefault,
+    RawRequestDefaultExpression<RawServerDefault>,
+    RawReplyDefaultExpression<RawServerDefault>,
+    Request & FastifyRouteGenericInterface,
+    ContextConfigDefault
+>;
+
+export type PreRequestHandler<Request = unknown> = preHandlerAsyncHookHandler<
+    RawServerDefault,
+    RawRequestDefaultExpression<RawServerDefault>,
+    RawReplyDefaultExpression<RawServerDefault>,
+    Request & FastifyRouteGenericInterface,
+    ContextConfigDefault
+>;
+
+export interface IFeedsEventRecord {
+    eventType: 'generateFeeds';
+    resourceId: string;
+    resourceType: 'post' | 'comment' | 'reaction';
 }

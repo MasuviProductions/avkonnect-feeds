@@ -1,13 +1,14 @@
 import { fastify } from 'fastify';
-import initRouter from './routes';
-import initDB from './utils/db/client';
+import initializeV1Routes from './api/v1/routes';
+import { initDynamoDB } from './db/client';
 
 const APP = fastify({
     logger: true,
 });
 
-initDB();
-initRouter(APP);
+initDynamoDB();
+
+initializeV1Routes(APP);
 
 export { APP };
 export default APP;

@@ -1,6 +1,6 @@
 # serverless.yml
 
-service: node-boilerplate
+service: avkonnect-feeds
 
 provider:
     name: aws
@@ -10,6 +10,11 @@ provider:
     apiGateway:
         binaryMediaTypes:
             - '*/*'
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:*
+          Resource: '*'
 
 package:
     patterns:
@@ -19,8 +24,15 @@ package:
         - 'build'
         - '.env'
 
+resources:
+    Resources:
+        FeedsSQSQueue:
+            Type: 'AWS::SQS::Queue'
+            Properties:
+                QueueName: avkonnect-feeds-queue-${opt:stage, self:provider.stage}
+
 functions:
-    app:
+    feeds:
         handler: ./build/serverless.handler
         events:
             - http:
@@ -29,3 +41,13 @@ functions:
                   request:
                       contentHandling: CONVERT_TO_TEXT
             - http: 'ANY {proxy+}'
+    notifications-generator:
+        handler: ./build/events/index.handler
+        events:
+            - sqs:
+                  arn:
+                      Fn::GetAtt:
+                          - FeedsSQSQueue
+                          - Arn
+                  batchSize: 10
+                  maximumBatchingWindow: 60
