@@ -23,8 +23,27 @@ const feedsGenerator = async (feedsRecord: IFeedsEventRecord) => {
             if (!post) {
                 throw Error(`Post info not found for id{${feedsRecord.resourceId}} `);
             }
-            const connections = await AVKKONNECT_CORE_SERVICE.getUserConnections(ENV.AUTH_SERVICE_KEY, post.userId);
-            await generateFeedForUsers(post, connections.data || []);
+
+            let nextSearchStartFromKey: string | undefined;
+            let isInitialIteration = true;
+
+            while (isInitialIteration || nextSearchStartFromKey) {
+                if (isInitialIteration) {
+                    isInitialIteration = false;
+                }
+                const connections = await AVKKONNECT_CORE_SERVICE.getUserConnections(
+                    ENV.AUTH_SERVICE_KEY,
+                    post.userId,
+                    'all',
+                    50,
+                    nextSearchStartFromKey
+                );
+                await generateFeedForUsers(post, connections.data || []);
+                const fetchedNextSearchStartFromKey = connections.dDBPagination?.nextSearchStartFromKey;
+                nextSearchStartFromKey = fetchedNextSearchStartFromKey
+                    ? encodeURI(JSON.stringify(fetchedNextSearchStartFromKey))
+                    : undefined;
+            }
         }
     }
 };
@@ -33,10 +52,10 @@ const generateFeedForUsers = async (post: IPostApiModel, connections: Array<ICon
     const feedsToCreate: Array<Promise<IFeed>> = [];
     connections.forEach((connection) => {
         const feed: IFeed = {
-            id: v4(), // lsi
-            userId: connection.connecteeId, // partition key
-            createdAt: new Date(Date.now()), // sort key
-            postId: post.id, // lsi
+            id: v4(),
+            userId: connection.connecteeId,
+            createdAt: new Date(Date.now()),
+            postId: post.id,
             feedSources: [
                 {
                     sourceId: post.userId,

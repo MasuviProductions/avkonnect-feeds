@@ -25,10 +25,16 @@ const getConnection = async (basicToken: string, connectionId: string): Promise<
 
 const getUserConnections = async (
     basicToken: string,
-    userId: string
+    userId: string,
+    connectionType: 'all' | 'connected' | 'pending' | 'sent',
+    limit: number,
+    nextSearchStartFromKey?: string
 ): Promise<HttpResponse<Array<IConnectionApiModel>>> => {
+    const queryString = `?connectionType=${connectionType}&limit=${limit}&nextSearchStartFromKey=${
+        nextSearchStartFromKey || ''
+    }`;
     const connections = await axios
-        .get<HttpResponse<IConnectionApiModel>>(API_ENDPOINTS.GET_CONNECTIONS(userId), {
+        .get<HttpResponse<IConnectionApiModel>>(API_ENDPOINTS.GET_CONNECTIONS(userId, queryString), {
             headers: { authorization: `Basic ${basicToken}` },
         })
         .then((res) => res.data)

@@ -39,7 +39,7 @@ export interface IPostsContent {
 }
 
 export interface IPostApiModel {
-    id: string; // primary key
+    id: string;
     createdAt: Date;
     updatedAt: Date;
     userId: string;
@@ -47,5 +47,34 @@ export interface IPostApiModel {
     visibleOnlyToConnections: boolean;
     commentsOnlyByConnections: boolean;
 }
+
+export const REACTIONS = ['like', 'support', 'love', 'laugh', 'sad'] as const;
+export type IReactionType = typeof REACTIONS[number];
+
+export interface ICommentContent {
+    text: string;
+    createdAt: Date;
+    mediaUrls: string[];
+    relatedUserIds: string[];
+}
+
+export interface IPostInfoUserActivity {
+    userComments?: ICommentContent[];
+    userReaction?: IReactionType;
+}
+
+export interface IPostsInfo extends Omit<IPostApiModel, 'id'> {
+    postId: string;
+    reactionsCount: Record<IReactionType, number>;
+    commentsCount: number;
+    userActivity?: IPostInfoUserActivity;
+}
+
+export interface IPostsInfoRequest {
+    userId?: string;
+    postIds: Array<string>;
+}
+
+export type IPostsInfoResponse = Array<IPostsInfo>;
 
 export type IUserApiResponse = IUserApiModel;
