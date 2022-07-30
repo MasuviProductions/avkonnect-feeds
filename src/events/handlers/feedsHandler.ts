@@ -15,7 +15,7 @@ const notificationsActivityHandler = async (event: ISQSEvent) => {
             await feedsEventProcessor(feedsEventRecord);
         } catch (err) {
             // eslint-disable-next-line no-console
-            console.log('ERROR:', (err as Error).message, err);
+            console.log('ERROR:', (err as Error).message);
         }
     }
 };

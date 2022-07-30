@@ -33,6 +33,16 @@ const createFeed = async (feed: IFeed): Promise<IFeed> => {
     return feedObj;
 };
 
-const DB_QUERIES = { getUserFeeds, createFeed };
+const createMultipleFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
+    const feedsRes = await Feeds.batchPut(feeds);
+    const areAllFeedsCreated = feedsRes.unprocessedItems.length === 0;
+    return areAllFeedsCreated;
+};
+
+const DB_QUERIES = {
+    getUserFeeds,
+    createFeed,
+    createMultipleFeeds,
+};
 
 export default DB_QUERIES;
