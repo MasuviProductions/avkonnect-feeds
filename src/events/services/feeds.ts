@@ -59,8 +59,17 @@ const generateFeedForPostCreation = async (postId: string) => {
 const generateFeedForPostReaction = async (reactionId: string) => {
     const reaction = await AVKONNECT_POSTS_SERVICE.getReaction(ENV.AUTH_SERVICE_KEY, reactionId);
     const postId = reaction.data?.resourceId as string;
+    const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
+    const post = postRes.data;
+    if (!post) {
+        throw Error(`Post info not found for id{${postId}} `);
+    }
     const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
-        const connectionIds = new Set(connections.map((connection) => connection.connecteeId));
+        const connectionIds = new Set(
+            connections
+                .map((connection) => connection.connecteeId)
+                .filter((connectionId) => connectionId != post.userId)
+        );
         const usersFeedsForPost = await DB_QUERIES.getFeedsForUserIdsByPostId(connectionIds, postId);
         const userIdFeedsMap = transformFeedsListToUserIdFeedsMap(usersFeedsForPost);
 
