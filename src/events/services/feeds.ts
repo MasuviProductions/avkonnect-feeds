@@ -26,6 +26,9 @@ const generateUserFeed = async (feedsRecord: IFeedsEventRecord) => {
             await generateFeedForPostReaction(feedsRecord.resourceId);
             return;
         }
+        case 'comment': {
+            await generateFeedForPostComment(feedsRecord.resourceId);
+        }
     }
 };
 
@@ -60,6 +63,7 @@ const generateFeedForPostReaction = async (reactionId: string) => {
     const reaction = await AVKONNECT_POSTS_SERVICE.getReaction(ENV.AUTH_SERVICE_KEY, reactionId);
     const postId = reaction.data?.resourceId as string;
     const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
+
     const post = postRes.data;
     if (!post) {
         throw Error(`Post info not found for id{${postId}} `);
@@ -81,7 +85,11 @@ const generateFeedForPostReaction = async (reactionId: string) => {
             };
             const existingUserFeed = userIdFeedsMap[connection.connecteeId];
             if (existingUserFeed) {
-                const feedtoUpdate = { ...existingUserFeed, feedSource: [...existingUserFeed.feedSources, feedSource] };
+                const feedtoUpdate: IFeed = {
+                    ...existingUserFeed,
+                    // TODO: Trim too many feed sources
+                    feedSources: [...existingUserFeed.feedSources, feedSource],
+                };
                 return feedtoUpdate;
             } else {
                 const feedToCreate: IFeed = {
@@ -96,7 +104,54 @@ const generateFeedForPostReaction = async (reactionId: string) => {
         });
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(reaction.data?.userId as string, feedCreationCallback);
+    await generateFeedForConnections(post.userId, feedCreationCallback);
+};
+
+const generateFeedForPostComment = async (commentId: string) => {
+    const comment = await AVKONNECT_POSTS_SERVICE.getComment(ENV.AUTH_SERVICE_KEY, commentId);
+    const postId = comment.data?.resourceId as string;
+    const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
+    const post = postRes.data;
+    if (!post) {
+        throw Error(`Post info not found for id{${postId}} `);
+    }
+    const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
+        const connectionIds = new Set(
+            connections
+                .map((connection) => connection.connecteeId)
+                .filter((connectionId) => connectionId != post.userId)
+        );
+        const usersFeedsForPost = await DB_QUERIES.getFeedsForUserIdsByPostId(connectionIds, postId);
+        const userIdFeedsMap = transformFeedsListToUserIdFeedsMap(usersFeedsForPost);
+
+        const feedsToCreate: Array<IFeed> = connections.map((connection) => {
+            const feedSource: IFeedSource = {
+                sourceId: connection.connectorId,
+                resourceId: commentId,
+                resourceType: 'comment',
+            };
+            const existingUserFeed = userIdFeedsMap[connection.connecteeId];
+            if (existingUserFeed) {
+                const feedtoUpdate: IFeed = {
+                    ...existingUserFeed,
+                    // TODO: Trim too many feed sources
+                    feedSources: [...existingUserFeed.feedSources, feedSource],
+                };
+                return feedtoUpdate;
+            } else {
+                const feedToCreate: IFeed = {
+                    id: v4(),
+                    userId: connection.connecteeId,
+                    createdAt: new Date(Date.now()),
+                    postId: postId,
+                    feedSources: [feedSource],
+                };
+                return feedToCreate;
+            }
+        });
+        await createFeedForUsers(feedsToCreate);
+    };
+    await generateFeedForConnections(post.userId, feedCreationCallback);
 };
 
 const generateFeedForConnections = async (
