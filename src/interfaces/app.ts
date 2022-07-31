@@ -10,6 +10,7 @@ import {
     RouteHandlerMethod,
 } from 'fastify';
 import { ReplyGenericInterface } from 'fastify/types/reply';
+import { IFeedSource } from '../db/models/feeds';
 import { IPostsInfo } from './api';
 
 export interface HttpResponseError {
@@ -65,6 +66,7 @@ export interface IFeedsEventRecord {
 
 export interface IUserFeedApiModel extends IPostsInfo {
     feedId: string;
+    feedSource: Array<IFeedSource>;
 }
 
 export type IUserFeedApiResponse = Array<IUserFeedApiModel>;

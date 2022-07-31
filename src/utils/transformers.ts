@@ -7,3 +7,11 @@ export const transformFeedsListToPostIdFeedsMap = (feeds: Array<IFeed>): Record<
     });
     return postIdFeedsMap;
 };
+
+export const transformFeedsListToUserIdFeedsMap = (feeds: Array<IFeed>): Record<string, IFeed> => {
+    const userIdFeedsMap: Record<string, IFeed> = {};
+    feeds.forEach((feed) => {
+        userIdFeedsMap[feed.userId] = feed;
+    });
+    return userIdFeedsMap;
+};

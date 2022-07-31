@@ -14,6 +14,8 @@ const API_ENDPOINTS = {
     GET_USER: (userId: string): string => `${AVKONNECT_URL.CORE}/api/v1/users/${userId}`,
     GET_POST: (postId: string): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/posts/${postId}`,
     GET_POSTS_INFO: (): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/posts/getPostsInfo`,
+    GET_COMMENT: (commentId: string): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/comments/${commentId}`,
+    GET_REACTION: (reactionId: string): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/reactions/${reactionId}`,
 };
 
 export default API_ENDPOINTS;
