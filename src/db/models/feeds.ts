@@ -9,7 +9,7 @@ interface IFeedSource {
 }
 const FeedSourceSchema = new dynamoose.Schema({
     sourceId: { type: String },
-    rsourceType: { type: String },
+    resourceType: { type: String },
     resourceId: { type: String },
 });
 

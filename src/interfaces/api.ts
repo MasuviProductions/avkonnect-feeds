@@ -30,6 +30,26 @@ export interface IUserApiModel {
     unseenNotificationsCount?: number;
 }
 
+export type ICommentAndReactionApiModelResourceType = 'post' | 'comment';
+
+export interface IReactionApiModel {
+    id: string;
+    userId: string;
+    createdAt: Date;
+    resourceId: string;
+    resourceType: ICommentAndReactionApiModelResourceType;
+    reaction: IReactionType;
+}
+
+export interface ICommentApiModel {
+    userId: string;
+    resourceId: string;
+    id: string;
+    resourceType: ICommentAndReactionApiModelResourceType;
+    createdAt: Date;
+    contents: ICommentContent[];
+}
+
 export interface IPostsContent {
     text: string;
     createdAt: Date;

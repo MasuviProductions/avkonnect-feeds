@@ -10,7 +10,8 @@ import {
     RouteHandlerMethod,
 } from 'fastify';
 import { ReplyGenericInterface } from 'fastify/types/reply';
-import { IPostsInfo } from './api';
+import { IFeedSource } from '../db/models/feeds';
+import { IPostsInfo, IUserApiModel } from './api';
 
 export interface HttpResponseError {
     code: string;
@@ -63,8 +64,13 @@ export interface IFeedsEventRecord {
     resourceType: 'post' | 'comment' | 'reaction';
 }
 
+export interface IUserFeedSource extends IFeedSource {
+    relatedUser: Partial<IUserApiModel>;
+}
+
 export interface IUserFeedApiModel extends IPostsInfo {
     feedId: string;
+    feedSources: Array<IUserFeedSource>;
 }
 
 export type IUserFeedApiResponse = Array<IUserFeedApiModel>;

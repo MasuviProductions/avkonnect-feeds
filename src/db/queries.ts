@@ -33,6 +33,35 @@ const createFeed = async (feed: IFeed): Promise<IFeed> => {
     return feedObj;
 };
 
-const DB_QUERIES = { getUserFeeds, createFeed };
+const createFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
+    if (feeds.length <= 0) {
+        return true;
+    }
+    const feedsRes = await Feeds.batchPut(feeds);
+    const areFeedsCreated = feedsRes.unprocessedItems.length === 0;
+    return areFeedsCreated;
+};
+
+const getFeedsForUserIdsByPostId = async (userIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
+    const userFeedsList = Array.from(userIds);
+    if (userFeedsList.length <= 0) {
+        return [];
+    }
+    const feeds = await Feeds.scan('postId')
+        .eq(postId)
+        .and()
+        .where('userId')
+        .in(userFeedsList)
+        .using('postIdIndex')
+        .exec();
+    return feeds;
+};
+
+const DB_QUERIES = {
+    getUserFeeds,
+    createFeed,
+    createFeeds,
+    getFeedsForUserIdsByPostId,
+};
 
 export default DB_QUERIES;
