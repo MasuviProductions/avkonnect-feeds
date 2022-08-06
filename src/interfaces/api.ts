@@ -32,9 +32,16 @@ export interface IUserApiModel {
 
 export type ICommentAndReactionApiModelResourceType = 'post' | 'comment';
 
+export type ISourceType = 'user' | 'company';
+
+export interface IRelatedSource {
+    sourceId: string;
+    sourceType: ISourceType;
+}
 export interface IReactionApiModel {
     id: string;
-    userId: string;
+    sourceId: string;
+    sourceType: ISourceType;
     createdAt: Date;
     resourceId: string;
     resourceType: ICommentAndReactionApiModelResourceType;
@@ -42,10 +49,11 @@ export interface IReactionApiModel {
 }
 
 export interface ICommentApiModel {
-    userId: string;
+    sourceId: string;
+    sourceType: ISourceType;
     resourceId: string;
-    id: string;
     resourceType: ICommentAndReactionApiModelResourceType;
+    id: string;
     createdAt: Date;
     contents: ICommentContent[];
 }
@@ -54,7 +62,7 @@ export interface IPostsContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
-    relatedUserIds: string[];
+    relatedSources: IRelatedSource[];
     hashtags: string[];
 }
 
@@ -62,7 +70,8 @@ export interface IPostApiModel {
     id: string;
     createdAt: Date;
     updatedAt: Date;
-    userId: string;
+    sourceId: string;
+    sourceType: ISourceType;
     contents: IPostsContent[];
     visibleOnlyToConnections: boolean;
     commentsOnlyByConnections: boolean;
@@ -75,23 +84,24 @@ export interface ICommentContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
-    relatedUserIds: string[];
+    relatedSources: IRelatedSource[];
 }
 
-export interface IPostInfoUserActivity {
-    userComments?: ICommentContent[];
-    userReaction?: IReactionType;
+export interface IPostInfoSourceActivity {
+    sourceComments?: ICommentContent[];
+    sourceReaction?: IReactionType;
 }
 
 export interface IPostsInfo extends Omit<IPostApiModel, 'id'> {
     postId: string;
     reactionsCount: Record<IReactionType, number>;
     commentsCount: number;
-    userActivity?: IPostInfoUserActivity;
+    sourceActivity?: IPostInfoSourceActivity;
 }
 
 export interface IPostsInfoRequest {
-    userId?: string;
+    sourceId?: string;
+    sourceType?: ISourceType;
     postIds: Array<string>;
 }
 

@@ -64,13 +64,13 @@ export interface IFeedsEventRecord {
     resourceType: 'post' | 'comment' | 'reaction';
 }
 
-export interface IUserFeedSource extends IFeedSource {
-    relatedUser: Partial<IUserApiModel>;
+export interface IFeedSourceInfo extends IFeedSource {
+    relatedSource: Partial<IUserApiModel>;
 }
 
-export interface IUserFeedApiModel extends IPostsInfo {
+export interface ISourceFeedApiModel extends IPostsInfo {
     feedId: string;
-    feedSources: Array<IUserFeedSource>;
+    feedSourcesInfo: Array<IFeedSourceInfo>;
 }
 
-export type IUserFeedApiResponse = Array<IUserFeedApiModel>;
+export type ISourceFeedApiResponse = Array<ISourceFeedApiModel>;

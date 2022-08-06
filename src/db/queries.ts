@@ -3,18 +3,18 @@ import { HttpDynamoDBResponsePagination } from '../interfaces/app';
 import DB_HELPERS from './helpers';
 import Feeds, { IFeed } from './models/feeds';
 
-const getUserFeeds = async (
-    userId: string,
+const getSourceFeeds = async (
+    sourceId: string,
     limit: number,
     nextSearchStartFromKey?: ObjectType
 ): Promise<{ documents: Array<Partial<IFeed>> | undefined; dDBPagination: HttpDynamoDBResponsePagination }> => {
-    const userFeedsQuery = await Feeds.query('userId').eq(userId).sort('descending');
+    const sourceFeedsQuery = await Feeds.query('sourceId').eq(sourceId).sort('descending');
 
     const paginatedDocuments = await DB_HELPERS.fetchDynamoDBPaginatedDocuments<IFeed>(
-        userFeedsQuery,
+        sourceFeedsQuery,
         [],
         limit,
-        ['userId', 'createdAt'],
+        ['sourceId', 'createdAt'],
         nextSearchStartFromKey
     );
 
@@ -42,26 +42,26 @@ const createFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
     return areFeedsCreated;
 };
 
-const getFeedsForUserIdsByPostId = async (userIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
-    const userFeedsList = Array.from(userIds);
-    if (userFeedsList.length <= 0) {
+const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
+    const sourceFeedsList = Array.from(sourceIds);
+    if (sourceFeedsList.length <= 0) {
         return [];
     }
     const feeds = await Feeds.scan('postId')
         .eq(postId)
         .and()
-        .where('userId')
-        .in(userFeedsList)
+        .where('sourceId')
+        .in(sourceFeedsList)
         .using('postIdIndex')
         .exec();
     return feeds;
 };
 
 const DB_QUERIES = {
-    getUserFeeds,
+    getSourceFeeds,
     createFeed,
     createFeeds,
-    getFeedsForUserIdsByPostId,
+    getFeedsForSourceIdsByPostId,
 };
 
 export default DB_QUERIES;
