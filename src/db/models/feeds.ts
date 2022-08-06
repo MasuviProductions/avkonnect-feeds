@@ -1,21 +1,25 @@
 import * as dynamoose from 'dynamoose';
 import { TABLE } from '../../constants/db';
 import { IDynamooseDocument } from '../../interfaces/app';
+import { ISourceType } from './shared';
 
 interface IFeedSource {
     sourceId: string;
+    sourceType: ISourceType;
     resourceType: 'post' | 'comment' | 'reaction';
     resourceId: string;
 }
 const FeedSourceSchema = new dynamoose.Schema({
     sourceId: { type: String },
+    sourceType: { type: String },
     resourceType: { type: String },
     resourceId: { type: String },
 });
 
 interface IFeed {
     id: string; // lsi
-    userId: string; // partition key
+    sourceId: string; // partition key
+    sourceType: ISourceType;
     createdAt: Date; // sort key
     postId: string; // lsi
     feedSources: Array<IFeedSource>;
@@ -27,7 +31,8 @@ const FeedsSchema = new dynamoose.Schema({
             name: 'feedIdIndex',
         },
     },
-    userId: { type: String, hashKey: true },
+    sourceId: { type: String, hashKey: true },
+    sourceType: { type: String },
     createdAt: { type: Date, rangeKey: true },
     postId: {
         type: String,

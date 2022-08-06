@@ -9,12 +9,12 @@ export const transformFeedsListToPostIdFeedsMap = (feeds: Array<IFeed>): Record<
     return postIdFeedsMap;
 };
 
-export const transformFeedsListToUserIdFeedsMap = (feeds: Array<IFeed>): Record<string, IFeed> => {
-    const userIdFeedsMap: Record<string, IFeed> = {};
+export const transformFeedsListToSourceIdFeedsMap = (feeds: Array<IFeed>): Record<string, IFeed> => {
+    const sourceIdFeedsMap: Record<string, IFeed> = {};
     feeds.forEach((feed) => {
-        userIdFeedsMap[feed.userId] = feed;
+        sourceIdFeedsMap[feed.sourceId] = feed;
     });
-    return userIdFeedsMap;
+    return sourceIdFeedsMap;
 };
 
 export const transformUsersListToUserIdUserMap = (

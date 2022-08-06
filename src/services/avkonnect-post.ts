@@ -27,7 +27,8 @@ const getPostsInfo = async (
         .post<IPostsInfoRequest, AxiosResponse<HttpResponse<IPostsInfoResponse>>>(
             API_ENDPOINTS.GET_POSTS_INFO(),
             {
-                userId: userId,
+                sourceId: userId,
+                sourceType: 'user',
                 postIds: Array.from(postIds),
             },
             {

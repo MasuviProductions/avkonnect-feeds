@@ -6,7 +6,7 @@ import { IConnectionApiModel } from '../../interfaces/api';
 import { IFeedsEventRecord } from '../../interfaces/app';
 import AVKKONNECT_CORE_SERVICE from '../../services/avkonnect-core';
 import AVKONNECT_POSTS_SERVICE from '../../services/avkonnect-post';
-import { transformFeedsListToUserIdFeedsMap } from '../../utils/transformers';
+import { transformFeedsListToSourceIdFeedsMap } from '../../utils/transformers';
 
 const feedsEventProcessor = async (feedsRecord: IFeedsEventRecord) => {
     switch (feedsRecord.eventType) {
@@ -40,7 +40,8 @@ const generateFeedForPostCreation = async (postId: string) => {
     }
     const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
         const feedSource: IFeedSource = {
-            sourceId: post.userId,
+            sourceId: post.sourceId,
+            sourceType: post.sourceType,
             resourceId: post.id,
             resourceType: 'post',
         };
@@ -48,7 +49,8 @@ const generateFeedForPostCreation = async (postId: string) => {
             (connection) =>
                 ({
                     id: v4(),
-                    userId: connection.connecteeId,
+                    sourceId: connection.connecteeId,
+                    sourceType: 'user',
                     createdAt: new Date(Date.now()),
                     postId: postId,
                     feedSources: [feedSource],
@@ -56,7 +58,7 @@ const generateFeedForPostCreation = async (postId: string) => {
         );
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(post.userId, feedCreationCallback);
+    await generateFeedForConnections(post.sourceId, feedCreationCallback);
 };
 
 const generateFeedForPostReaction = async (reactionId: string) => {
@@ -72,14 +74,15 @@ const generateFeedForPostReaction = async (reactionId: string) => {
         const connectionIds = new Set(
             connections
                 .map((connection) => connection.connecteeId)
-                .filter((connectionId) => connectionId != post.userId)
+                .filter((connectionId) => connectionId != post.sourceId)
         );
-        const usersFeedsForPost = await DB_QUERIES.getFeedsForUserIdsByPostId(connectionIds, postId);
-        const userIdFeedsMap = transformFeedsListToUserIdFeedsMap(usersFeedsForPost);
+        const usersFeedsForPost = await DB_QUERIES.getFeedsForSourceIdsByPostId(connectionIds, postId);
+        const userIdFeedsMap = transformFeedsListToSourceIdFeedsMap(usersFeedsForPost);
 
         const feedsToCreate: Array<IFeed> = connections.map((connection) => {
             const feedSource: IFeedSource = {
                 sourceId: connection.connectorId,
+                sourceType: 'user',
                 resourceId: reactionId,
                 resourceType: 'reaction',
             };
@@ -94,7 +97,8 @@ const generateFeedForPostReaction = async (reactionId: string) => {
             } else {
                 const feedToCreate: IFeed = {
                     id: v4(),
-                    userId: connection.connecteeId,
+                    sourceId: connection.connecteeId,
+                    sourceType: 'user',
                     createdAt: new Date(Date.now()),
                     postId: postId,
                     feedSources: [feedSource],
@@ -104,7 +108,7 @@ const generateFeedForPostReaction = async (reactionId: string) => {
         });
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(post.userId, feedCreationCallback);
+    await generateFeedForConnections(post.sourceId, feedCreationCallback);
 };
 
 const generateFeedForPostComment = async (commentId: string) => {
@@ -119,14 +123,15 @@ const generateFeedForPostComment = async (commentId: string) => {
         const connectionIds = new Set(
             connections
                 .map((connection) => connection.connecteeId)
-                .filter((connectionId) => connectionId != post.userId)
+                .filter((connectionId) => connectionId != post.sourceId)
         );
-        const usersFeedsForPost = await DB_QUERIES.getFeedsForUserIdsByPostId(connectionIds, postId);
-        const userIdFeedsMap = transformFeedsListToUserIdFeedsMap(usersFeedsForPost);
+        const usersFeedsForPost = await DB_QUERIES.getFeedsForSourceIdsByPostId(connectionIds, postId);
+        const userIdFeedsMap = transformFeedsListToSourceIdFeedsMap(usersFeedsForPost);
 
         const feedsToCreate: Array<IFeed> = connections.map((connection) => {
             const feedSource: IFeedSource = {
                 sourceId: connection.connectorId,
+                sourceType: 'user',
                 resourceId: commentId,
                 resourceType: 'comment',
             };
@@ -141,7 +146,8 @@ const generateFeedForPostComment = async (commentId: string) => {
             } else {
                 const feedToCreate: IFeed = {
                     id: v4(),
-                    userId: connection.connecteeId,
+                    sourceId: connection.connecteeId,
+                    sourceType: 'user',
                     createdAt: new Date(Date.now()),
                     postId: postId,
                     feedSources: [feedSource],
@@ -151,7 +157,7 @@ const generateFeedForPostComment = async (commentId: string) => {
         });
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(post.userId, feedCreationCallback);
+    await generateFeedForConnections(post.sourceId, feedCreationCallback);
 };
 
 const generateFeedForConnections = async (
