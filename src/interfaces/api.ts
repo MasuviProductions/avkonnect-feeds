@@ -34,10 +34,8 @@ export type ICommentAndReactionApiModelResourceType = 'post' | 'comment';
 
 export type ISourceType = 'user' | 'company';
 
-export interface IRelatedSource {
-    sourceId: string;
-    sourceType: ISourceType;
-}
+export type IRelatedSource = Partial<IUserApiModel>;
+
 export interface IReactionApiModel {
     id: string;
     sourceId: string;
@@ -62,7 +60,6 @@ export interface IPostsContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
-    relatedSources: IRelatedSource[];
     hashtags: string[];
 }
 
@@ -84,7 +81,6 @@ export interface ICommentContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
-    relatedSources: IRelatedSource[];
 }
 
 export interface IPostInfoSourceActivity {
@@ -105,6 +101,9 @@ export interface IPostsInfoRequest {
     postIds: Array<string>;
 }
 
-export type IPostsInfoResponse = Array<IPostsInfo>;
+export interface IPostsInfoResponse {
+    postsInfo: Array<IPostsInfo>;
+    relatedSources: Array<IRelatedSource>;
+}
 
 export type IUserApiResponse = IUserApiModel;

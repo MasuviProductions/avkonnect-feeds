@@ -1,5 +1,4 @@
 import { IFeed } from '../db/models/feeds';
-import { IUserApiModel } from '../interfaces/api';
 
 export const transformFeedsListToPostIdFeedsMap = (feeds: Array<IFeed>): Record<string, IFeed> => {
     const postIdFeedsMap: Record<string, IFeed> = {};
@@ -15,14 +14,4 @@ export const transformFeedsListToSourceIdFeedsMap = (feeds: Array<IFeed>): Recor
         sourceIdFeedsMap[feed.sourceId] = feed;
     });
     return sourceIdFeedsMap;
-};
-
-export const transformUsersListToUserIdUserMap = (
-    users: Array<Partial<IUserApiModel>>
-): Record<string, Partial<IUserApiModel>> => {
-    const userIdUsersMap: Record<string, Partial<IUserApiModel>> = {};
-    users.forEach((user) => {
-        userIdUsersMap[user.id as string] = user;
-    });
-    return userIdUsersMap;
 };

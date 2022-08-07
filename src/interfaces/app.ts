@@ -11,7 +11,7 @@ import {
 } from 'fastify';
 import { ReplyGenericInterface } from 'fastify/types/reply';
 import { IFeedSource } from '../db/models/feeds';
-import { IPostsInfo, IUserApiModel } from './api';
+import { IPostsInfo, IRelatedSource } from './api';
 
 export interface HttpResponseError {
     code: string;
@@ -64,13 +64,12 @@ export interface IFeedsEventRecord {
     resourceType: 'post' | 'comment' | 'reaction';
 }
 
-export interface IFeedSourceInfo extends IFeedSource {
-    relatedSource: Partial<IUserApiModel>;
-}
-
 export interface ISourceFeedApiModel extends IPostsInfo {
     feedId: string;
-    feedSourcesInfo: Array<IFeedSourceInfo>;
+    feedSources: Array<IFeedSource>;
 }
 
-export type ISourceFeedApiResponse = Array<ISourceFeedApiModel>;
+export interface ISourceFeedApiResponse {
+    feeds: Array<ISourceFeedApiModel>;
+    relatedSources: Array<IRelatedSource>;
+}

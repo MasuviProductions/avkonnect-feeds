@@ -5,7 +5,7 @@ import DB_QUERIES from '../../../db/queries';
 import { HttpDynamoDBResponsePagination, ISourceFeedApiModel, ISourceFeedApiResponse } from '../../../interfaces/app';
 import AVKKONNECT_CORE_SERVICE from '../../../services/avkonnect-core';
 import AVKONNECT_POSTS_SERVICE from '../../../services/avkonnect-post';
-import { transformFeedsListToPostIdFeedsMap, transformUsersListToUserIdUserMap } from '../../../utils/transformers';
+import { transformFeedsListToPostIdFeedsMap } from '../../../utils/transformers';
 
 const getSourceFeeds = async (
     sourceId: string,
@@ -25,21 +25,28 @@ const getSourceFeeds = async (
             sourceIds.add(feedSource.sourceId);
         });
     });
-    const relatedUsers = await AVKKONNECT_CORE_SERVICE.getUsersInfo(ENV.AUTH_SERVICE_KEY, Array.from(sourceIds));
-    const relatedUserIdUserMap = transformUsersListToUserIdUserMap(relatedUsers.data || []);
+    // NOTE: Remove userIds from list to prevent fetching duplicate values for relatedSources
+    postsInfo.data?.relatedSources?.forEach((relatedUser) => {
+        // NOTE: Doesn't matter if return value is true or false. Delete only if it exists
+        sourceIds.delete(relatedUser.id as string);
+    });
+    const sourceUsersRes = await AVKKONNECT_CORE_SERVICE.getUsersInfo(ENV.AUTH_SERVICE_KEY, Array.from(sourceIds));
+
     const userFeedsWithPostInfo =
-        postsInfo.data?.map(
+        postsInfo.data?.postsInfo.map(
             (postInfo) =>
                 ({
                     ...postInfo,
                     feedId: postIdToFeedMap[postInfo.postId].id,
-                    feedSourcesInfo: postIdToFeedMap[postInfo.postId].feedSources.map((feedSource) => ({
-                        ...feedSource,
-                        relatedSource: relatedUserIdUserMap[feedSource.sourceId],
-                    })),
+                    feedSources: postIdToFeedMap[postInfo.postId].feedSources,
                 } as ISourceFeedApiModel)
         ) || [];
-    return { documents: userFeedsWithPostInfo, dDBPagination: sourceFeeds.dDBPagination };
+
+    const feedsInfo: ISourceFeedApiResponse = {
+        feeds: userFeedsWithPostInfo,
+        relatedSources: [...(postsInfo.data?.relatedSources || []), ...(sourceUsersRes.data || [])],
+    };
+    return { documents: feedsInfo, dDBPagination: sourceFeeds.dDBPagination };
 };
 
 const FEEDS_SERVICE = {
