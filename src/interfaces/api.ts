@@ -36,6 +36,22 @@ export type ISourceType = 'user' | 'company';
 
 export type IRelatedSource = Partial<IUserApiModel>;
 
+export type INotificationResourceType = 'post' | 'comment' | 'connection' | 'broadcast';
+
+export type IConnectionActivity = 'connectionRequest' | 'connectionConfirmation';
+export type IPostActivity = 'postReaction' | 'postComment' | 'postCreation';
+export type ICommentActivity = 'commentReaction' | 'commentComment' | 'commentCreation';
+
+export type INotificationResourceActivity = IConnectionActivity | IPostActivity | ICommentActivity;
+
+export interface INotificationActivity {
+    resourceId: string;
+    resourceType: INotificationResourceType;
+    resourceActivity: INotificationResourceActivity;
+    sourceId: string;
+    sourceType: ISourceType;
+}
+
 export interface IReactionApiModel {
     id: string;
     sourceId: string;
@@ -88,10 +104,36 @@ export interface IPostInfoSourceActivity {
     sourceReaction?: IReactionType;
 }
 
-export interface IPostsInfo extends Omit<IPostApiModel, 'id'> {
-    postId: string;
+interface IBanInfo {
+    sourceId: string;
+    sourceType: ISourceType;
+    banReason: string;
+}
+
+interface IActivityReportSource {
+    sourceId: string;
+    sourceType: ISourceType;
+    reportReason: string;
+}
+
+interface IActivityReportInfo {
+    reportCount: number;
+    sources: Array<IActivityReportSource>;
+}
+
+export interface IActivityApiModel {
+    id: string;
+    resourceId: string;
+    resourceType: ICommentAndReactionApiModelResourceType;
     reactionsCount: Record<IReactionType, number>;
     commentsCount: number;
+    reportInfo: IActivityReportInfo;
+    banInfo?: IBanInfo;
+}
+
+export interface IPostsInfo extends Omit<IPostApiModel, 'id'> {
+    postId: string;
+    activity: IActivityApiModel;
     sourceActivity?: IPostInfoSourceActivity;
 }
 

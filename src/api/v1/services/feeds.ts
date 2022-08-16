@@ -31,7 +31,6 @@ const getSourceFeeds = async (
         sourceIds.delete(relatedUser.id as string);
     });
     const sourceUsersRes = await AVKKONNECT_CORE_SERVICE.getUsersInfo(ENV.AUTH_SERVICE_KEY, Array.from(sourceIds));
-
     const userFeedsWithPostInfo =
         postsInfo.data?.postsInfo.map(
             (postInfo) =>
