@@ -99,9 +99,9 @@ export interface ICommentContent {
     mediaUrls: string[];
 }
 
-export interface IPostInfoSourceActivity {
-    sourceComments?: ICommentContent[];
-    sourceReaction?: IReactionType;
+export interface ISourceActivity {
+    comments?: ICommentContent[];
+    reaction?: IReactionType;
 }
 
 interface IBanInfo {
@@ -134,7 +134,7 @@ export interface IActivityApiModel {
 export interface IPostsInfo extends Omit<IPostApiModel, 'id'> {
     postId: string;
     activity: IActivityApiModel;
-    sourceActivity?: IPostInfoSourceActivity;
+    sourceActivity?: ISourceActivity;
 }
 
 export interface IPostsInfoRequest {
