@@ -19,8 +19,8 @@ const getSourceFeeds = async (
     );
 
     if (paginatedDocuments.dDBPagination.nextSearchStartFromKey) {
-        paginatedDocuments.dDBPagination.nextSearchStartFromKey.createdAt = (
-            paginatedDocuments.dDBPagination.nextSearchStartFromKey.createdAt as Date
+        paginatedDocuments.dDBPagination.nextSearchStartFromKey.createdAt = new Date(
+            paginatedDocuments.dDBPagination.nextSearchStartFromKey.createdAt
         ).getTime();
     }
 
