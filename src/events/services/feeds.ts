@@ -63,6 +63,7 @@ const generateFeedForPostCreation = async (postId: string) => {
 
 const generateFeedForPostReaction = async (reactionId: string) => {
     const reaction = await AVKONNECT_POSTS_SERVICE.getReaction(ENV.AUTH_SERVICE_KEY, reactionId);
+    const reactionSourceId = reaction.data?.sourceId as string;
     const postId = reaction.data?.resourceId as string;
     const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
 
@@ -108,11 +109,12 @@ const generateFeedForPostReaction = async (reactionId: string) => {
         });
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(post.sourceId, feedCreationCallback);
+    await generateFeedForConnections(reactionSourceId, feedCreationCallback);
 };
 
 const generateFeedForPostComment = async (commentId: string) => {
     const comment = await AVKONNECT_POSTS_SERVICE.getComment(ENV.AUTH_SERVICE_KEY, commentId);
+    const commentSourceId = comment.data?.sourceId as string;
     const postId = comment.data?.resourceId as string;
     const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
     const post = postRes.data;
@@ -157,7 +159,7 @@ const generateFeedForPostComment = async (commentId: string) => {
         });
         await createFeedForUsers(feedsToCreate);
     };
-    await generateFeedForConnections(post.sourceId, feedCreationCallback);
+    await generateFeedForConnections(commentSourceId, feedCreationCallback);
 };
 
 const generateFeedForConnections = async (
