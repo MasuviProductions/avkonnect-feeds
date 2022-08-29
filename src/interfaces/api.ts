@@ -121,12 +121,14 @@ interface IActivityReportInfo {
     sources: Array<IActivityReportSource>;
 }
 
+export type ICommentCountType = 'comment' | 'subComment';
+
 export interface IActivityApiModel {
     id: string;
     resourceId: string;
     resourceType: ICommentAndReactionApiModelResourceType;
     reactionsCount: Record<IReactionType, number>;
-    commentsCount: number;
+    commentsCount: Record<ICommentCountType, number>;
     reportInfo: IActivityReportInfo;
     banInfo?: IBanInfo;
 }
