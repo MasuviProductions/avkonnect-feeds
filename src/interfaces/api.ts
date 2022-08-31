@@ -76,7 +76,6 @@ export interface IPostsContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
-    hashtags: string[];
 }
 
 export interface IPostApiModel {
@@ -86,6 +85,7 @@ export interface IPostApiModel {
     sourceId: string;
     sourceType: ISourceType;
     contents: IPostsContent[];
+    hashtags: string[];
     visibleOnlyToConnections: boolean;
     commentsOnlyByConnections: boolean;
 }
