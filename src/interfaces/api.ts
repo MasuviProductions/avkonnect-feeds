@@ -76,6 +76,7 @@ export interface IPostsContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
+    stringifiedRawContent: string;
 }
 
 export interface IPostApiModel {
@@ -97,6 +98,7 @@ export interface ICommentContent {
     text: string;
     createdAt: Date;
     mediaUrls: string[];
+    stringifiedRawContent: string;
 }
 
 export interface ISourceActivity {
