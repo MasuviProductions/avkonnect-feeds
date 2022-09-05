@@ -38,7 +38,7 @@ const generateFeedForPostCreation = async (postId: string) => {
     if (!post) {
         throw Error(`Post info not found for id{${postId}} `);
     }
-    const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
+    const feedCreationCallback = async (connections: Array<IConnectionApiModel>): Promise<IFeed[]> => {
         const feedSource: IFeedSource = {
             sourceId: post.sourceId,
             sourceType: post.sourceType,
@@ -56,7 +56,7 @@ const generateFeedForPostCreation = async (postId: string) => {
                     feedSources: [feedSource],
                 } as IFeed)
         );
-        await createFeedForUsers(feedsToCreate);
+        return feedsToCreate;
     };
     await generateFeedForConnections(post.sourceId, feedCreationCallback);
 };
@@ -71,7 +71,7 @@ const generateFeedForPostReaction = async (reactionId: string) => {
     if (!post) {
         throw Error(`Post info not found for id{${postId}} `);
     }
-    const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
+    const feedCreationCallback = async (connections: Array<IConnectionApiModel>): Promise<IFeed[]> => {
         const connectionIds = new Set(
             connections
                 .map((connection) => connection.connecteeId)
@@ -107,7 +107,7 @@ const generateFeedForPostReaction = async (reactionId: string) => {
                 return feedToCreate;
             }
         });
-        await createFeedForUsers(feedsToCreate);
+        return feedsToCreate;
     };
     await generateFeedForConnections(reactionSourceId, feedCreationCallback);
 };
@@ -121,7 +121,7 @@ const generateFeedForPostComment = async (commentId: string) => {
     if (!post) {
         throw Error(`Post info not found for id{${postId}} `);
     }
-    const feedCreationCallback = async (connections: Array<IConnectionApiModel>) => {
+    const feedCreationCallback = async (connections: Array<IConnectionApiModel>): Promise<IFeed[]> => {
         const connectionIds = new Set(
             connections
                 .map((connection) => connection.connecteeId)
@@ -157,14 +157,14 @@ const generateFeedForPostComment = async (commentId: string) => {
                 return feedToCreate;
             }
         });
-        await createFeedForUsers(feedsToCreate);
+        return feedsToCreate;
     };
     await generateFeedForConnections(commentSourceId, feedCreationCallback);
 };
 
 const generateFeedForConnections = async (
     userId: string,
-    feedCreationCallback: (connections: Array<IConnectionApiModel>) => Promise<void>
+    feedCreationCallback: (connections: Array<IConnectionApiModel>) => Promise<IFeed[]>
 ) => {
     let nextSearchStartFromKey: string | undefined;
     let isInitialIteration = true;
@@ -181,7 +181,9 @@ const generateFeedForConnections = async (
             nextSearchStartFromKey
         );
 
-        await feedCreationCallback(connections.data || []);
+        const feedsToCreate = await feedCreationCallback(connections.data || []);
+        await createFeedForUsers(feedsToCreate);
+
         const fetchedNextSearchStartFromKey = connections.dDBPagination?.nextSearchStartFromKey;
         nextSearchStartFromKey = fetchedNextSearchStartFromKey
             ? encodeURI(JSON.stringify(fetchedNextSearchStartFromKey))
