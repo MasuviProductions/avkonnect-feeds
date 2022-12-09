@@ -1,5 +1,6 @@
 import { ObjectType } from 'dynamoose/dist/General';
 import { feedsEventProcessor } from '../../../events/services/feeds';
+import { IPostsInfoResponse } from '../../../interfaces/api';
 import { HttpResponse, IFeedsEventRecord, ISourceFeedApiResponse, RequestHandler } from '../../../interfaces/app';
 import FEEDS_SERVICE from '../services/feeds';
 
@@ -24,11 +25,22 @@ export const getFeedsForUser: RequestHandler<{
     reply.status(200).send(response);
 };
 
+export const getTrendingPosts: RequestHandler = async (request, reply) => {
+    const trendsPostIds = await FEEDS_SERVICE.getTrendingPost();
+    if (!trendsPostIds) {
+        return undefined;
+    }
+    const response: HttpResponse<IPostsInfoResponse> = {
+        success: true,
+        data: trendsPostIds,
+    };
+    reply.status(200).send(response);
+};
+
 export const feedGenerateSampleEvent: RequestHandler<{
     Body: IFeedsEventRecord;
 }> = async (request, reply) => {
     const { body } = request;
-
     await feedsEventProcessor(body);
     const response: HttpResponse = {
         success: true,

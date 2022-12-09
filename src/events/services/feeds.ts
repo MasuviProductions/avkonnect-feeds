@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import ENV from '../../constants/env';
 import { IFeed, IFeedSource } from '../../db/models/feeds';
+import Trending from '../../db/models/trending';
 import DB_QUERIES from '../../db/queries';
 import { IConnectionApiModel } from '../../interfaces/api';
 import { IFeedsEventRecord } from '../../interfaces/app';
@@ -12,6 +13,44 @@ const feedsEventProcessor = async (feedsRecord: IFeedsEventRecord) => {
     switch (feedsRecord.eventType) {
         case 'generateFeeds': {
             await generateUserFeed(feedsRecord);
+            return;
+        }
+        case 'computeTrendingPostScore': {
+            await computeTrendingPostScore(feedsRecord);
+            return;
+        }
+    }
+};
+
+const computeTrendingPostScore = async (feedsRecord: IFeedsEventRecord) => {
+    if (feedsRecord.resourceType == 'post') {
+        const postActivity = await AVKONNECT_POSTS_SERVICE.getPostActivity(
+            ENV.AUTH_SERVICE_KEY,
+            feedsRecord.resourceId
+        );
+        const reactionCount = postActivity.data?.reactionsCount;
+        const commentComment = postActivity.data?.commentsCount.comment;
+        const subComment = postActivity.data?.commentsCount.subComment;
+        if (!reactionCount || !subComment || !commentComment) {
+            return undefined;
+        }
+        const score =
+            0.7 *
+                (reactionCount.laugh +
+                    reactionCount?.like +
+                    reactionCount?.love +
+                    reactionCount?.sad +
+                    reactionCount?.support) +
+            0.2 * commentComment +
+            0.1 * subComment;
+        const trendingPostId = await Trending.query('postId').eq(postActivity.data?.resourceId).exists();
+        if (!trendingPostId) {
+            const trending = { postId: postActivity.data?.resourceId, score: score };
+            const trendingObj = new Trending(trending);
+            await trendingObj.save();
+            return trendingObj;
+        } else {
+            return await Trending.update({ postId: postActivity.data?.resourceId }, { score: score });
         }
     }
 };

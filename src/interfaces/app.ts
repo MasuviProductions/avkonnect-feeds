@@ -59,7 +59,7 @@ export type PreRequestHandler<Request = unknown> = preHandlerAsyncHookHandler<
 >;
 
 export interface IFeedsEventRecord {
-    eventType: 'generateFeeds';
+    eventType: 'generateFeeds' | 'computeTrendingPostScore';
     resourceId: string;
     resourceType: 'post' | 'comment' | 'reaction';
 }

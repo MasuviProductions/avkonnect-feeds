@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRegisterOptions } from 'fastify';
 import { authHandler } from '../../../middlewares/authHandler';
-import { feedGenerateSampleEvent, getFeedsForUser } from '../controllers/feedsController';
+import { feedGenerateSampleEvent, getFeedsForUser, getTrendingPosts } from '../controllers/feedsController';
 
 const initializeCommentsRoutes = (
     fastify: FastifyInstance,
@@ -10,6 +10,8 @@ const initializeCommentsRoutes = (
     fastify.get('/users/:userId/feeds', { preHandler: [authHandler] }, getFeedsForUser);
 
     fastify.post('/feedGenerateSampleEvent', feedGenerateSampleEvent);
+
+    fastify.post('/trending', getTrendingPosts);
 
     done?.();
 };

@@ -2,6 +2,7 @@ import { ObjectType } from 'dynamoose/dist/General';
 import { HttpDynamoDBResponsePagination } from '../interfaces/app';
 import DB_HELPERS from './helpers';
 import Feeds, { IFeed } from './models/feeds';
+import Trending, { ITrending } from './models/trending';
 
 const getSourceFeeds = async (
     sourceId: string,
@@ -42,6 +43,11 @@ const createFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
     return areFeedsCreated;
 };
 
+const scanTrendingPosts = async (): Promise<Array<ITrending>> => {
+    const trends = await Trending.scan('score').gt(0).exec();
+    return trends;
+};
+
 const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
     const sourceFeedsList = Array.from(sourceIds);
     if (sourceFeedsList.length <= 0) {
@@ -60,6 +66,7 @@ const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: stri
 const DB_QUERIES = {
     getSourceFeeds,
     createFeed,
+    scanTrendingPosts,
     createFeeds,
     getFeedsForSourceIdsByPostId,
 };

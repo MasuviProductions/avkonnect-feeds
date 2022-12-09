@@ -48,8 +48,16 @@ const getSourceFeeds = async (
     return { documents: feedsInfo, dDBPagination: sourceFeeds.dDBPagination };
 };
 
+const getTrendingPost = async () => {
+    const postsWeight = await DB_QUERIES.scanTrendingPosts();
+    const postIds = postsWeight.map((post) => post.postId as string);
+    const postsInfo = await AVKONNECT_POSTS_SERVICE.getTrendingPostsInfo(ENV.AUTH_SERVICE_KEY, new Set(postIds));
+    return postsInfo.data;
+};
+
 const FEEDS_SERVICE = {
     getSourceFeeds,
+    getTrendingPost,
 };
 
 export default FEEDS_SERVICE;

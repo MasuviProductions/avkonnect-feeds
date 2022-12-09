@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import API_ENDPOINTS from '../constants/api';
 import {
+    IActivityApiModel,
     ICommentApiModel,
     IPostApiModel,
     IPostsInfoRequest,
@@ -8,6 +9,34 @@ import {
     IReactionApiModel,
 } from '../interfaces/api';
 import { HttpResponse } from '../interfaces/app';
+
+const getPostActivity = async (basicToken: string, resourceId: string): Promise<HttpResponse<IActivityApiModel>> => {
+    const posts = await axios
+        .get<HttpResponse<IActivityApiModel>>(API_ENDPOINTS.GET_POST_ACTIVITY(resourceId), {
+            headers: { authorization: `Basic ${basicToken}` },
+        })
+        .then((res) => res.data);
+    return posts;
+};
+
+const getTrendingPostsInfo = async (
+    basicToken: string,
+    postIds: Set<string>
+): Promise<HttpResponse<IPostsInfoResponse>> => {
+    const trendingPosts = await axios
+        .post<IPostsInfoRequest, AxiosResponse<HttpResponse<IPostsInfoResponse>>>(
+            API_ENDPOINTS.GET_TRENDING_POST(),
+            {
+                sourceType: 'user',
+                postIds: Array.from(postIds),
+            },
+            {
+                headers: { authorization: `Basic ${basicToken}` },
+            }
+        )
+        .then((res) => res.data);
+    return trendingPosts;
+};
 
 const getPost = async (basicToken: string, postId: string): Promise<HttpResponse<IPostApiModel>> => {
     const post = await axios
@@ -64,6 +93,8 @@ const AVKONNECT_POSTS_SERVICE = {
     getPostsInfo,
     getComment,
     getReaction,
+    getPostActivity,
+    getTrendingPostsInfo,
 };
 
 export default AVKONNECT_POSTS_SERVICE;
