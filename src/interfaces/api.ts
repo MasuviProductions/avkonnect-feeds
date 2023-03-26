@@ -79,6 +79,9 @@ export interface IPostsContent {
     stringifiedRawContent: string;
 }
 
+export type IPostStatus = 'created' | 'draft';
+export type IPostMediaStatus = 'uploading' | 'uploaded' | 'processing' | 'failed' | 'success';
+
 export interface IPostApiModel {
     id: string;
     createdAt: Date;
@@ -87,6 +90,10 @@ export interface IPostApiModel {
     sourceType: ISourceType;
     contents: IPostsContent[];
     hashtags: string[];
+    postStatus: IPostStatus;
+    postMediaStatus: IPostMediaStatus;
+    isDeleted: boolean;
+    isBanned: boolean;
     visibleOnlyToConnections: boolean;
     commentsOnlyByConnections: boolean;
 }
