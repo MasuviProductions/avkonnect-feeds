@@ -16,7 +16,6 @@ const API_ENDPOINTS = {
     GET_POSTS_INFO: (): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/posts/getPostsInfo`,
     GET_COMMENT: (commentId: string): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/comments/${commentId}`,
     GET_REACTION: (reactionId: string): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/reactions/${reactionId}`,
-    GET_TRENDING_POST: (): string => `${AVKONNECT_URL.POSTS}/api/posts/v1/posts/trending`,
     GET_POST_ACTIVITY: (resourceId: string): string =>
         `${AVKONNECT_URL.POSTS}/api/posts/v1/posts/${resourceId}/trending`,
 };

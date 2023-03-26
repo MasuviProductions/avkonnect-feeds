@@ -4,7 +4,7 @@ import { HttpDynamoDBResponsePagination, IDynamooseDocument } from '../interface
 
 const DYNAMODB_USER_SEARCH_SCAN_LIMIT = 20;
 
-const fetchDynamoDBPaginatedDocuments = async <T extends { id: string }>(
+const fetchDynamoDBPaginatedDocuments = async <T>(
     initialQuery: Scan<IDynamooseDocument<T>> | Query<IDynamooseDocument<T>>,
     attributes: Array<string>,
     requestLimit: number,

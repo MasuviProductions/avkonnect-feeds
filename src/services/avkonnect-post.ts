@@ -12,30 +12,11 @@ import { HttpResponse } from '../interfaces/app';
 
 const getPostActivity = async (basicToken: string, resourceId: string): Promise<HttpResponse<IActivityApiModel>> => {
     const posts = await axios
-        .get<HttpResponse<IActivityApiModel>>(API_ENDPOINTS.GET_POST_ACTIVITY(resourceId), {
+        .post<HttpResponse<IActivityApiModel>>(API_ENDPOINTS.GET_POST_ACTIVITY(resourceId), {
             headers: { authorization: `Basic ${basicToken}` },
         })
         .then((res) => res.data);
     return posts;
-};
-
-const getTrendingPostsInfo = async (
-    basicToken: string,
-    postIds: Set<string>
-): Promise<HttpResponse<IPostsInfoResponse>> => {
-    const trendingPosts = await axios
-        .post<IPostsInfoRequest, AxiosResponse<HttpResponse<IPostsInfoResponse>>>(
-            API_ENDPOINTS.GET_TRENDING_POST(),
-            {
-                sourceType: 'user',
-                postIds: Array.from(postIds),
-            },
-            {
-                headers: { authorization: `Basic ${basicToken}` },
-            }
-        )
-        .then((res) => res.data);
-    return trendingPosts;
 };
 
 const getPost = async (basicToken: string, postId: string): Promise<HttpResponse<IPostApiModel>> => {
@@ -49,8 +30,8 @@ const getPost = async (basicToken: string, postId: string): Promise<HttpResponse
 
 const getPostsInfo = async (
     basicToken: string,
-    userId: string,
-    postIds: Set<string>
+    postIds: Set<string>,
+    userId?: string
 ): Promise<HttpResponse<IPostsInfoResponse>> => {
     const posts = await axios
         .post<IPostsInfoRequest, AxiosResponse<HttpResponse<IPostsInfoResponse>>>(
@@ -94,7 +75,6 @@ const AVKONNECT_POSTS_SERVICE = {
     getComment,
     getReaction,
     getPostActivity,
-    getTrendingPostsInfo,
 };
 
 export default AVKONNECT_POSTS_SERVICE;

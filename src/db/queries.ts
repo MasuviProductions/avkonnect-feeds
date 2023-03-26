@@ -43,9 +43,21 @@ const createFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
     return areFeedsCreated;
 };
 
-const scanTrendingPosts = async (): Promise<Array<ITrending>> => {
-    const trends = await Trending.scan('score').gt(0).exec();
-    return trends;
+const scanTrendingPosts = async (
+    limit: number,
+    nextSearchStartFromKey?: ObjectType
+): Promise<{ documents: Array<Partial<ITrending>> | undefined; dDBPagination: HttpDynamoDBResponsePagination }> => {
+    const trends = await Trending.scan('score').gt(2);
+
+    const paginatedDocuments = await DB_HELPERS.fetchDynamoDBPaginatedDocuments<ITrending>(
+        trends,
+        [],
+        limit,
+        ['postId'],
+        nextSearchStartFromKey
+    );
+
+    return paginatedDocuments || [];
 };
 
 const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
@@ -53,6 +65,7 @@ const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: stri
     if (sourceFeedsList.length <= 0) {
         return [];
     }
+    //TODO:Optimise the scan to query
     const feeds = await Feeds.scan('postId')
         .eq(postId)
         .and()
