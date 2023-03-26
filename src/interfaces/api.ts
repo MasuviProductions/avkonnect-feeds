@@ -72,10 +72,18 @@ export interface ICommentApiModel {
     contents: ICommentContent[];
 }
 
+export type IPostImageType = 'postImageOriginal' | 'postImageThumbnail' | 'postImageMax' | 'postImageStandard';
+
+export interface IPostMediaUrl {
+    resolution: string;
+    url: string;
+    type: IPostImageType;
+}
+
 export interface IPostsContent {
     text: string;
     createdAt: Date;
-    mediaUrls: string[];
+    mediaUrls: Array<Array<IPostMediaUrl>>;
     stringifiedRawContent: string;
 }
 
@@ -89,13 +97,13 @@ export interface IPostApiModel {
     sourceId: string;
     sourceType: ISourceType;
     contents: IPostsContent[];
-    hashtags: string[];
+    hashtags: Array<string>;
+    visibleOnlyToConnections: boolean;
+    commentsOnlyByConnections: boolean;
     postStatus: IPostStatus;
     postMediaStatus: IPostMediaStatus;
     isDeleted: boolean;
     isBanned: boolean;
-    visibleOnlyToConnections: boolean;
-    commentsOnlyByConnections: boolean;
 }
 
 export const REACTIONS = ['like', 'support', 'love', 'laugh', 'sad'] as const;
