@@ -7,6 +7,33 @@ export interface IConnectionApiModel {
     connectionInitiatedBy: string;
 }
 
+export interface IImage<T extends string = string> {
+    resolution: string;
+    url: string;
+    type: T;
+}
+
+export type IUserImageType =
+    | 'displayPictureOriginal'
+    | 'displayPictureThumbnail'
+    | 'displayPictureMax'
+    | 'displayPictureStandard'
+    | 'backgroundPictureOriginal'
+    | 'backgroundPictureThumbnail'
+    | 'backgroundPictureMax'
+    | 'backgroundPictureStandard';
+
+export interface IUserImage {
+    mediaUrls: Array<IMediaUrl>;
+    mediaStatus: string;
+}
+
+type IMediaUrl = IImage<IUserImageType>;
+
+export type IProfilePictureImages = IUserImage;
+
+export type IBackgroundPictureImages = IUserImage;
+
 export interface IUserApiModel {
     id: string;
     aboutUser: string;
@@ -28,6 +55,8 @@ export interface IUserApiModel {
     skillsRefId: string;
     certificationsRefId: string;
     unseenNotificationsCount?: number;
+    profilePictureImages: IProfilePictureImages;
+    backgroundPictureImages: IBackgroundPictureImages;
 }
 
 export type ICommentAndReactionApiModelResourceType = 'post' | 'comment';
@@ -72,12 +101,23 @@ export interface ICommentApiModel {
     contents: ICommentContent[];
 }
 
+export type IPostImageType = 'postImageOriginal' | 'postImageThumbnail' | 'postImageMax' | 'postImageStandard';
+
+export interface IPostMediaUrl {
+    resolution: string;
+    url: string;
+    type: IPostImageType;
+}
+
 export interface IPostsContent {
     text: string;
     createdAt: Date;
-    mediaUrls: string[];
+    mediaUrls: Array<Array<IPostMediaUrl>>;
     stringifiedRawContent: string;
 }
+
+export type IPostStatus = 'created' | 'draft';
+export type IPostMediaStatus = 'uploading' | 'uploaded' | 'processing' | 'failed' | 'success';
 
 export interface IPostApiModel {
     id: string;
@@ -86,9 +126,13 @@ export interface IPostApiModel {
     sourceId: string;
     sourceType: ISourceType;
     contents: IPostsContent[];
-    hashtags: string[];
+    hashtags: Array<string>;
     visibleOnlyToConnections: boolean;
     commentsOnlyByConnections: boolean;
+    postStatus: IPostStatus;
+    postMediaStatus: IPostMediaStatus;
+    isDeleted: boolean;
+    isBanned: boolean;
 }
 
 export const REACTIONS = ['like', 'support', 'love', 'laugh', 'sad'] as const;
