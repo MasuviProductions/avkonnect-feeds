@@ -61,7 +61,7 @@ export type PreRequestHandler<Request = unknown> = preHandlerAsyncHookHandler<
 export interface IFeedsEventRecord {
     eventType: 'generateFeeds' | 'computeTrendingPostScore';
     resourceId: string;
-    resourceType: 'post' | 'comment' | 'reaction';
+    resourceType: 'post' | 'comment' | 'subComment' | 'reaction' | 'like' | 'laugh' | 'sad' | 'love' | 'support';
 }
 
 export interface ISourceFeedApiModel extends IPostsInfo {

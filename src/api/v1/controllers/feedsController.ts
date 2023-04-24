@@ -33,7 +33,6 @@ export const managedFeedsForUser: RequestHandler<{
     //refactor the code and the the limit 0 issue, compute for the reaction in SQS
     const userLimit = Math.round(parseInt(limit) * 0.7);
     const trendingLimit = parseInt(limit) - userLimit;
-
     //limit 1 means send 1 and 10 means 10
     let userFeeds;
     let trendingFeeds;
@@ -56,6 +55,7 @@ export const managedFeedsForUser: RequestHandler<{
             ),
         ]);
     }
+
     if (userFeeds.documents.feeds.length === 0) {
         //dont forget to change this condition after the logic
         const modifiedLimit = parseInt(limit) - trendingLimit;

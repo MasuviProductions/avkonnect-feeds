@@ -23,30 +23,24 @@ const feedsEventProcessor = async (feedsRecord: IFeedsEventRecord) => {
 };
 
 const computeTrendingPostScore = async (feedsRecord: IFeedsEventRecord) => {
-    if (feedsRecord.resourceType == 'post') {
-        const postActivity = await AVKONNECT_POSTS_SERVICE.getPostActivity(
-            ENV.AUTH_SERVICE_KEY,
-            feedsRecord.resourceId
-        );
+    const postActivity = await AVKONNECT_POSTS_SERVICE.getPostActivity(ENV.AUTH_SERVICE_KEY, feedsRecord.resourceId);
+    const {
+        resourceId,
+        reactionsCount: { love, like, support, laugh, sad },
+        commentsCount: { comment, subComment },
+    } = postActivity.data as IActivityApiModel;
 
-        const {
-            resourceId,
-            reactionsCount: { love, like, support, laugh, sad },
-            commentsCount: { comment, subComment },
-        } = postActivity.data as IActivityApiModel;
+    const score = 0.5 * (laugh + like + love + sad + support) + 0.4 * comment + 0.2 * subComment - 0.2;
 
-        const score = 0.5 * (laugh + like + love + sad + support) + 0.4 * comment + 0.2 * subComment - 0.2;
+    const trendingPostId = await Trending.query('postId').eq(resourceId).exists();
 
-        const trendingPostId = await Trending.query('postId').eq(resourceId).exists();
-
-        if (!trendingPostId) {
-            const trending = { postId: resourceId, score: score };
-            const trendingObj = new Trending(trending);
-            await trendingObj.save();
-            return trendingObj;
-        } else {
-            return await Trending.update({ postId: resourceId }, { score: score });
-        }
+    if (!trendingPostId) {
+        const trending = { postId: resourceId, score: score };
+        const trendingObj = new Trending(trending);
+        await trendingObj.save();
+        return trendingObj;
+    } else {
+        return await Trending.update({ postId: resourceId }, { score: score });
     }
 };
 
