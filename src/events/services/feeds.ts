@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
 import ENV from '../../constants/env';
 import { IFeed, IFeedSource } from '../../db/models/feeds';
+import Trending from '../../db/models/trending';
 import DB_QUERIES from '../../db/queries';
-import { IConnectionApiModel } from '../../interfaces/api';
+import { IActivityApiModel, IConnectionApiModel } from '../../interfaces/api';
 import { IFeedsEventRecord } from '../../interfaces/app';
 import AVKKONNECT_CORE_SERVICE from '../../services/avkonnect-core';
 import AVKONNECT_POSTS_SERVICE from '../../services/avkonnect-post';
@@ -12,7 +13,34 @@ const feedsEventProcessor = async (feedsRecord: IFeedsEventRecord) => {
     switch (feedsRecord.eventType) {
         case 'generateFeeds': {
             await generateUserFeed(feedsRecord);
+            return;
         }
+        case 'computeTrendingPostScore': {
+            await computeTrendingPostScore(feedsRecord);
+            return;
+        }
+    }
+};
+
+const computeTrendingPostScore = async (feedsRecord: IFeedsEventRecord) => {
+    const postActivity = await AVKONNECT_POSTS_SERVICE.getPostActivity(ENV.AUTH_SERVICE_KEY, feedsRecord.resourceId);
+    const {
+        resourceId,
+        reactionsCount: { love, like, support, laugh, sad },
+        commentsCount: { comment, subComment },
+    } = postActivity.data as IActivityApiModel;
+
+    const score = 0.5 * (laugh + like + love + sad + support) + 0.4 * comment + 0.2 * subComment - 0.2;
+
+    const trendingPostId = await Trending.query('postId').eq(resourceId).exists();
+
+    if (!trendingPostId) {
+        const trending = { postId: resourceId, score: score };
+        const trendingObj = new Trending(trending);
+        await trendingObj.save();
+        return trendingObj;
+    } else {
+        return await Trending.update({ postId: resourceId }, { score: score });
     }
 };
 
@@ -33,11 +61,13 @@ const generateUserFeed = async (feedsRecord: IFeedsEventRecord) => {
 };
 
 const generateFeedForPostCreation = async (postId: string) => {
+    //1. gets the Post data
     const postRes = await AVKONNECT_POSTS_SERVICE.getPost(ENV.AUTH_SERVICE_KEY, postId);
     const post = postRes.data;
     if (!post) {
         throw Error(`Post info not found for id{${postId}} `);
     }
+    //create a feed Creation Callback
     const feedCreationCallback = async (connections: Array<IConnectionApiModel>): Promise<IFeed[]> => {
         const feedSource: IFeedSource = {
             sourceId: post.sourceId,
@@ -168,7 +198,6 @@ const generateFeedForConnections = async (
 ) => {
     let nextSearchStartFromKey: string | undefined;
     let isInitialIteration = true;
-
     while (isInitialIteration || nextSearchStartFromKey) {
         if (isInitialIteration) {
             isInitialIteration = false;

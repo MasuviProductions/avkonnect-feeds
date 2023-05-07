@@ -11,7 +11,7 @@ import {
 } from 'fastify';
 import { ReplyGenericInterface } from 'fastify/types/reply';
 import { IFeedSource } from '../db/models/feeds';
-import { IPostsInfo, IRelatedSource } from './api';
+import { IPostsInfo, IPostsInfoResponse, IRelatedSource } from './api';
 
 export interface HttpResponseError {
     code: string;
@@ -59,9 +59,19 @@ export type PreRequestHandler<Request = unknown> = preHandlerAsyncHookHandler<
 >;
 
 export interface IFeedsEventRecord {
-    eventType: 'generateFeeds';
+    eventType: 'generateFeeds' | 'computeTrendingPostScore';
     resourceId: string;
-    resourceType: 'post' | 'comment' | 'reaction';
+    resourceType: 'post' | 'comment' | 'subComment' | 'reaction';
+}
+
+export interface IUserFeeds {
+    documents: ISourceFeedApiResponse;
+    dDBPagination: HttpDynamoDBResponsePagination;
+}
+
+export interface ITrendingFeeds {
+    documents: IPostsInfoResponse | undefined;
+    dDBPagination: HttpDynamoDBResponsePagination;
 }
 
 export interface ISourceFeedApiModel extends IPostsInfo {

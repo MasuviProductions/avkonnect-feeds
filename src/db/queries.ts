@@ -2,6 +2,7 @@ import { ObjectType } from 'dynamoose/dist/General';
 import { HttpDynamoDBResponsePagination } from '../interfaces/app';
 import DB_HELPERS from './helpers';
 import Feeds, { IFeed } from './models/feeds';
+import Trending, { ITrending } from './models/trending';
 
 const getSourceFeeds = async (
     sourceId: string,
@@ -42,11 +43,29 @@ const createFeeds = async (feeds: Array<IFeed>): Promise<boolean> => {
     return areFeedsCreated;
 };
 
+const scanTrendingPosts = async (
+    limit: number,
+    nextSearchStartFromKey?: ObjectType
+): Promise<{ documents: Array<Partial<ITrending>> | undefined; dDBPagination: HttpDynamoDBResponsePagination }> => {
+    const trends = await Trending.scan('score').gt(2);
+
+    const paginatedDocuments = await DB_HELPERS.fetchDynamoDBPaginatedDocuments<ITrending>(
+        trends,
+        [],
+        limit,
+        ['postId'],
+        nextSearchStartFromKey
+    );
+
+    return paginatedDocuments || [];
+};
+
 const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: string): Promise<Array<IFeed>> => {
     const sourceFeedsList = Array.from(sourceIds);
     if (sourceFeedsList.length <= 0) {
         return [];
     }
+    //TODO:Optimise the scan to query
     const feeds = await Feeds.scan('postId')
         .eq(postId)
         .and()
@@ -60,6 +79,7 @@ const getFeedsForSourceIdsByPostId = async (sourceIds: Set<string>, postId: stri
 const DB_QUERIES = {
     getSourceFeeds,
     createFeed,
+    scanTrendingPosts,
     createFeeds,
     getFeedsForSourceIdsByPostId,
 };

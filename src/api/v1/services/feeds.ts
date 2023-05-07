@@ -17,7 +17,8 @@ const getSourceFeeds = async (
 }> => {
     const sourceFeeds = await DB_QUERIES.getSourceFeeds(sourceId, limit, nextSearchStartFromKey);
     const postIds = sourceFeeds.documents?.map((feed) => feed.postId as string);
-    const postsInfo = await AVKONNECT_POSTS_SERVICE.getPostsInfo(ENV.AUTH_SERVICE_KEY, sourceId, new Set(postIds));
+    const postsInfo = await AVKONNECT_POSTS_SERVICE.getPostsInfo(ENV.AUTH_SERVICE_KEY, new Set(postIds), sourceId);
+
     const postIdToFeedMap = transformFeedsListToPostIdFeedsMap(sourceFeeds.documents as Array<IFeed>);
     const sourceIds = new Set<string>();
     sourceFeeds.documents?.forEach((feed) => {
@@ -48,8 +49,16 @@ const getSourceFeeds = async (
     return { documents: feedsInfo, dDBPagination: sourceFeeds.dDBPagination };
 };
 
+const getTrendingPost = async (limit: number, nextSearchStartFromKey?: ObjectType, userId?: string) => {
+    const postsWeight = await DB_QUERIES.scanTrendingPosts(limit, nextSearchStartFromKey);
+    const postIds = postsWeight.documents?.map((post) => post.postId as string);
+    const postsInfo = await AVKONNECT_POSTS_SERVICE.getPostsInfo(ENV.AUTH_SERVICE_KEY, new Set(postIds), userId);
+    return { documents: postsInfo.data, dDBPagination: postsWeight.dDBPagination };
+};
+
 const FEEDS_SERVICE = {
     getSourceFeeds,
+    getTrendingPost,
 };
 
 export default FEEDS_SERVICE;

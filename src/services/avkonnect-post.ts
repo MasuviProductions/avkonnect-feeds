@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import API_ENDPOINTS from '../constants/api';
 import {
+    IActivityApiModel,
     ICommentApiModel,
     IPostApiModel,
     IPostsInfoRequest,
@@ -8,6 +9,15 @@ import {
     IReactionApiModel,
 } from '../interfaces/api';
 import { HttpResponse } from '../interfaces/app';
+
+const getPostActivity = async (basicToken: string, resourceId: string): Promise<HttpResponse<IActivityApiModel>> => {
+    const posts = await axios
+        .post<HttpResponse<IActivityApiModel>>(API_ENDPOINTS.GET_POST_ACTIVITY(resourceId), {
+            headers: { authorization: `Basic ${basicToken}` },
+        })
+        .then((res) => res.data);
+    return posts;
+};
 
 const getPost = async (basicToken: string, postId: string): Promise<HttpResponse<IPostApiModel>> => {
     const post = await axios
@@ -20,8 +30,8 @@ const getPost = async (basicToken: string, postId: string): Promise<HttpResponse
 
 const getPostsInfo = async (
     basicToken: string,
-    userId: string,
-    postIds: Set<string>
+    postIds: Set<string>,
+    userId?: string
 ): Promise<HttpResponse<IPostsInfoResponse>> => {
     const posts = await axios
         .post<IPostsInfoRequest, AxiosResponse<HttpResponse<IPostsInfoResponse>>>(
@@ -64,6 +74,7 @@ const AVKONNECT_POSTS_SERVICE = {
     getPostsInfo,
     getComment,
     getReaction,
+    getPostActivity,
 };
 
 export default AVKONNECT_POSTS_SERVICE;
