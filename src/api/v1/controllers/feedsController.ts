@@ -6,6 +6,8 @@ import {
     IFeedsEventRecord,
     ISourceFeedApiModel,
     ISourceFeedApiResponse,
+    ITrendingFeeds,
+    IUserFeeds,
     RequestHandler,
 } from '../../../interfaces/app';
 import FEEDS_SERVICE from '../services/feeds';
@@ -31,26 +33,28 @@ export const managedFeedsForUser: RequestHandler<{
         ? (JSON.parse(decodeURI(nextSearchStartFromKey)) as ObjectType)
         : undefined;
     //refactor the code and the the limit 0 issue, compute for the reaction in SQS
-    const userLimit = Math.round(parseInt(limit) * 0.7);
-    const trendingLimit = parseInt(limit) - userLimit;
+    const userFeedsLimit = Math.round(parseInt(limit) * 0.7);
+    const trendingPostsLimit = parseInt(limit) - userFeedsLimit;
     //limit 1 means send 1 and 10 means 10
-    let userFeeds;
-    let trendingFeeds;
+
+    let userFeeds: IUserFeeds;
+    let trendingFeeds: ITrendingFeeds | undefined;
+
     if (parseInt(limit) === 1) {
         userFeeds = await FEEDS_SERVICE.getSourceFeeds(
             userId,
-            userLimit,
+            userFeedsLimit,
             nextSearchStartFromKeyDecodeddJson?.nextSearchStartFromKeyUser
         );
     } else {
         [userFeeds, trendingFeeds] = await Promise.all([
             FEEDS_SERVICE.getSourceFeeds(
                 userId,
-                userLimit,
+                userFeedsLimit,
                 nextSearchStartFromKeyDecodeddJson?.nextSearchStartFromKeyUser
             ),
             FEEDS_SERVICE.getTrendingPost(
-                trendingLimit,
+                trendingPostsLimit,
                 nextSearchStartFromKeyDecodeddJson?.nextSearchStartFromKeyTrending
             ),
         ]);
@@ -58,7 +62,7 @@ export const managedFeedsForUser: RequestHandler<{
 
     if (userFeeds.documents.feeds.length === 0) {
         //dont forget to change this condition after the logic
-        const modifiedLimit = parseInt(limit) - trendingLimit;
+        const modifiedLimit = parseInt(limit) - trendingPostsLimit;
         const nextKeyTrending = trendingFeeds?.dDBPagination?.nextSearchStartFromKey;
         const temp = await FEEDS_SERVICE.getTrendingPost(modifiedLimit, nextKeyTrending);
         if (trendingFeeds?.documents && temp.documents) {
@@ -78,7 +82,6 @@ export const managedFeedsForUser: RequestHandler<{
         })) || [];
 
     userFeeds.documents.feeds = userFeeds.documents.feeds.concat(feedsForTrendingPosts);
-    //
 
     // console.log(feedsForTrendingPosts.length);
 
